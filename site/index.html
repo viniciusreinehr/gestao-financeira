@@ -65,6 +65,44 @@
       display: block;
     }
 
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid var(--primary);
+      border-radius: 8px;
+      background: var(--card);
+      color: var(--primary);
+      cursor: pointer;
+      padding: 0;
+      margin-left: auto;
+    }
+
+    .menu-toggle span,
+    .menu-toggle span::before,
+    .menu-toggle span::after {
+      width: 22px;
+      height: 3px;
+      border-radius: 3px;
+      background: currentColor;
+      display: block;
+      content: '';
+      transition: transform 180ms ease, opacity 180ms ease;
+      position: relative;
+    }
+
+    .menu-toggle span::before {
+      position: absolute;
+      top: -8px;
+    }
+
+    .menu-toggle span::after {
+      position: absolute;
+      top: 8px;
+    }
+
     .nav {
       display: flex;
       flex-wrap: wrap;
@@ -232,6 +270,51 @@
     }
 
     @media (max-width: 780px) {
+      header .container {
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        min-width: auto;
+      }
+
+      .menu-toggle {
+        display: flex;
+      }
+
+      .nav {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        margin-left: 0;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 10px 20px var(--shadow);
+      }
+
+      .nav.open {
+        display: flex;
+      }
+
+      .nav a {
+        min-height: 44px;
+        line-height: 44px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--line);
+        border-left: 3px solid transparent;
+      }
+
+      .nav a:last-child {
+        border-bottom: none;
+      }
+
+      .nav a:hover {
+        border-left-color: var(--accent);
+      }
+
       .hero,
       .grid {
         grid-template-columns: 1fr;
@@ -246,6 +329,9 @@
         <a class="brand" href="#top" aria-label="Fluxo Familiar">
           <img src="logo.webp" alt="Fluxo Familiar">
         </a>
+        <button class="menu-toggle" type="button" aria-label="Abrir menu" aria-expanded="false">
+          <span></span>
+        </button>
         <div class="nav">
           <a href="#funcionalidades">Funcionalidades</a>
           <a href="#como-usar">Como usar</a>
@@ -348,5 +434,15 @@
       Sistema desenvolvido com Flask + SQLite para gestão financeira familiar.
     </div>
   </main>
+
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const nav = document.querySelector('.nav');
+
+    menuToggle.addEventListener('click', function () {
+      const isOpen = nav.classList.toggle('open');
+      menuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+  </script>
 </body>
 </html>
