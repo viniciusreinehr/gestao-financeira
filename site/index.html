@@ -241,6 +241,7 @@
       <nav class="nav">
         <a href="#funcionalidades">Funcionalidades</a>
         <a href="#como-usar">Como usar</a>
+        <a href="#download">Download das versões</a>
         <a href="#workflow">Workflow</a>
       </nav>
     </div>
@@ -292,23 +293,51 @@
       </div>
     </section>
 
+    <section class="section" id="download">
+      <h2>Download das versões buildadas</h2>
+      <div class="feature">
+        <h3>Releases do projeto</h3>
+        <p>As versões prontas para uso são publicadas como artefatos binários na aba de Releases do repositório.</p>
+        <p>
+          <a href="https://github.com/viniciusreinehr/gestao-financeira/releases/latest" target="_blank" rel="noopener">
+            Baixar a versão mais recente
+          </a>
+        </p>
+        <p>
+          <a href="https://github.com/viniciusreinehr/gestao-financeira/releases" target="_blank" rel="noopener">
+            Ver todas as versões publicadas
+          </a>
+        </p>
+      </div>
+    </section>
+
     <section class="section" id="como-usar">
       <h2>Como usar</h2>
-      <ol class="steps">
-        <li>Instale o Python 3.10 ou superior e crie um ambiente virtual.</li>
-        <li>Instale as dependências com <span class="code">pip install -r requirements.txt</span>.</li>
-        <li>Rode a aplicação com <span class="code">python run.py</span>.</li>
-        <li>Para desenvolvimento, use <span class="code">python dev.py</span> e recarregue a tela automaticamente.</li>
-        <li>Opcionalmente, importe o histórico da planilha com <span class="code">python importar_planilha.py</span>.</li>
-      </ol>
-
-      <div class="code">
-cd gestao-financeira
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python run.py
+      <div class="grid">
+        <article class="feature">
+          <h3>1. Escolha a versão</h3>
+          <p>Baixe o executável correspondente ao seu sistema operacional na página de Releases do projeto.</p>
+        </article>
+        <article class="feature">
+          <h3>Windows</h3>
+          <p>Use o arquivo <strong>GestaoFinanceira-Windows.zip</strong> ou o executável gerado para Windows, extraia se necessário e execute o programa.</p>
+        </article>
+        <article class="feature">
+          <h3>macOS</h3>
+          <p>Use o pacote <strong>GestaoFinanceira-macOS.zip</strong> e extraia o app antes de abrir a aplicação.</p>
+        </article>
+        <article class="feature">
+          <h3>Linux</h3>
+          <p>Use o binário <strong>GestaoFinanceira-Linux</strong> e conceda permissão de execução, se necessário.</p>
+        </article>
       </div>
+
+      <ol class="steps">
+        <li>Abra a página de <a href="https://github.com/viniciusreinehr/gestao-financeira/releases/latest" target="_blank" rel="noopener">Download da versão mais recente</a>.</li>
+        <li>Escolha o arquivo para o seu sistema operacional: Windows, macOS ou Linux.</li>
+        <li>Baixe e execute o pacote ou binário correspondente.</li>
+        <li>Se o sistema pedir confirmação de segurança, aprove a execução local do aplicativo.</li>
+      </ol>
     </section>
 
     <section class="section" id="workflow">
