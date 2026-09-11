@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestão Financeira da Família</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --text: #1f2937;
+      --muted: #4b5563;
+      --line: #d1d5db;
+      --card: #ffffff;
+      --primary: #146c43;
+      --primary-dark: #0f5132;
+      --primary-soft: #dcfce7;
+      --accent: #e8f5e9;
+      --shadow: rgba(15, 23, 42, 0.1);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      --sans: Arial, Helvetica, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+    }
+
+    header {
+      background: var(--primary-dark);
+      color: white;
+      padding: 30px 20px;
+      box-shadow: 0 3px 12px var(--shadow);
+    }
+
+    header .container {
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .brand .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: var(--primary-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 20px;
+    }
+
+    .nav {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 2px solid transparent;
+      padding-bottom: 5px;
+    }
+
+    .nav a:hover {
+      border-color: var(--primary-soft);
+    }
+
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.8fr 1fr;
+      gap: 30px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .hero h1 {
+      margin: 0 0 14px;
+      font-size: clamp(40px, 5vw, 54px);
+      line-height: 1.1;
+      letter-spacing: -0.045em;
+    }
+
+    .hero p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .hero-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 12px 26px var(--shadow);
+    }
+
+    .hero-card h3 {
+      margin-top: 0;
+      color: var(--primary-dark);
+      font-size: 22px;
+    }
+
+    .hero-card ul {
+      padding-left: 20px;
+      color: var(--muted);
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 28px;
+      margin-top: 22px;
+      box-shadow: 0 10px 20px var(--shadow);
+    }
+
+    .section h2 {
+      margin: 0 0 16px;
+      color: var(--primary-dark);
+      font-size: 32px;
+      letter-spacing: -0.035em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .feature {
+      background: #eefaf4;
+      border-left: 4px solid var(--primary);
+      padding: 16px;
+      border-radius: 10px;
+    }
+
+    .feature h3 {
+      margin: 0 0 8px;
+      color: var(--primary-dark);
+      font-size: 20px;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .code {
+      background: #111827;
+      color: #e5fdf2;
+      padding: 16px;
+      border-radius: 10px;
+      font-family: var(--mono);
+      white-space: pre-wrap;
+      overflow-x: auto;
+      border: 1px solid #334155;
+    }
+
+    .steps {
+      counter-reset: step;
+      padding-left: 0;
+      list-style: none;
+    }
+
+    .steps li {
+      position: relative;
+      padding: 14px 0 14px 50px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .steps li:last-child {
+      border-bottom: none;
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 10px;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .footer {
+      margin-top: 30px;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 780px) {
+      .hero,
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="brand">
+        <span class="logo">R$</span>
+        <span>Gestão Financeira da Família</span>
+      </div>
+      <nav class="nav">
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#como-usar">Como usar</a>
+        <a href="#workflow">Workflow</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <h1>Controle financeiro doméstico</h1>
+        <p>Uma aplicação em Flask com SQLite para organizar contas, receitas, investimentos, categorias e dashboard mensal.</p>
+      </div>
+      <aside class="hero-card">
+        <h3>Visão rápida</h3>
+        <ul>
+          <li>Dashboard com visão do mês atual e próximos meses.</li>
+          <li>Cadastro de receitas, contas e locais.</li>
+          <li>Importação de histórico de planilha.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="section" id="funcionalidades">
+      <h2>Funcionalidades</h2>
+      <div class="grid">
+        <article class="feature">
+          <h3>Dashboard</h3>
+          <p>Resumo financeiro do mês atual, próximos dois meses e acompanhamento de gastos por categoria.</p>
+        </article>
+        <article class="feature">
+          <h3>Contas</h3>
+          <p>Cadastro de contas, vencimentos, status e provisionamento automático de contas variáveis.</p>
+        </article>
+        <article class="feature">
+          <h3>Receitas</h3>
+          <p>Organização das entradas mensais, receitas previstas e receitas já realizadas.</p>
+        </article>
+        <article class="feature">
+          <h3>Investimentos</h3>
+          <p>Registro e acompanhamento de investimentos pessoais e reservas financeiras.</p>
+        </article>
+        <article class="feature">
+          <h3>Locais e Categorias</h3>
+          <p>Classificação de despesas, fornecedores e compreensão de movimentos por origem.</p>
+        </article>
+        <article class="feature">
+          <h3>Importação da planilha</h3>
+          <p>Suporte para trazer histórico do Excel e mapear automaticamente contas e categorias.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" id="como-usar">
+      <h2>Como usar</h2>
+      <ol class="steps">
+        <li>Instale o Python 3.10 ou superior e crie um ambiente virtual.</li>
+        <li>Instale as dependências com <span class="code">pip install -r requirements.txt</span>.</li>
+        <li>Rode a aplicação com <span class="code">python run.py</span>.</li>
+        <li>Para desenvolvimento, use <span class="code">python dev.py</span> e recarregue a tela automaticamente.</li>
+        <li>Opcionalmente, importe o histórico da planilha com <span class="code">python importar_planilha.py</span>.</li>
+      </ol>
+
+      <div class="code">
+cd gestao-financeira
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python run.py
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <h2>Fluxo de uso recomendado</h2>
+      <div class="grid">
+        <article class="feature">
+          <h3>1. Preparar ambiente</h3>
+          <p>Crie o ambiente virtual e instale as dependências do projeto.</p>
+        </article>
+        <article class="feature">
+          <h3>2. Carregar dados</h3>
+          <p>Se tiver histórico em Excel, execute o importador para criar o banco.</p>
+        </article>
+        <article class="feature">
+          <h3>3. Navegar pelo dashboard</h3>
+          <p>Use o painel para revisar vencimentos, receitas, investimento e fluxo mensal.</p>
+        </article>
+        <article class="feature">
+          <h3>4. Continuar manutenção</h3>
+          <p>Atualize receitas, contas e categorias conforme as necessidades da família.</p>
+        </article>
+      </div>
+    </section>
+
+    <div class="footer">
+      Sistema desenvolvido com Flask + SQLite para gestão financeira familiar.
+    </div>
+  </main>
+</body>
+</html>
