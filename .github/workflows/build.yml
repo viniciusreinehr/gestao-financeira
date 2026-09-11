@@ -1,5 +1,8 @@
 name: Build executáveis
 
+permissions:
+  contents: write
+
 # Roda sempre que houver um push na branch principal, em qualquer Pull
 # Request, ou manualmente pela aba "Actions" do GitHub (botão "Run workflow").
 # Se você criar uma tag no formato v1.0.0 (git tag v1.0.0 && git push --tags),
