@@ -23,11 +23,13 @@ jobs:
 
       - name: Configurar GitHub Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
 
       - name: Preparar artefato estático
         run: |
           mkdir -p site
-          cp site/index.html site/index.html
+          cp -f site/index.html site/index.html
 
       - name: Enviar artefato para deploy
         uses: actions/upload-pages-artifact@v3
