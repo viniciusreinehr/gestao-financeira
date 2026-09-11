@@ -3,21 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Gestão Financeira da Família</title>
+  <title>Fluxo Familiar</title>
+  <link rel="icon" href="favicon.webp" type="image/webp">
   <style>
     :root {
       --bg: #f8fafc;
-      --text: #1f2937;
-      --muted: #4b5563;
-      --line: #d1d5db;
+      --text: #334155;
+      --muted: #64748b;
+      --line: #e2e8f0;
       --card: #ffffff;
-      --primary: #146c43;
-      --primary-dark: #0f5132;
-      --primary-soft: #dcfce7;
-      --accent: #e8f5e9;
+      --primary: #1b365d;
+      --primary-dark: #142847;
+      --primary-soft: #eaf2f8;
+      --accent: #10b981;
+      --accent-soft: #eefaf6;
       --shadow: rgba(15, 23, 42, 0.1);
       --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-      --sans: Arial, Helvetica, sans-serif;
+      --sans: "Inter", "Segoe UI", Roboto, Arial, Helvetica, sans-serif;
     }
 
     * {
@@ -33,10 +35,11 @@
     }
 
     header {
-      background: var(--primary-dark);
-      color: white;
-      padding: 30px 20px;
+      background: var(--primary-soft);
+      color: var(--primary-dark);
+      padding: 22px 20px 26px;
       box-shadow: 0 3px 12px var(--shadow);
+      border-bottom: 3px solid var(--primary);
     }
 
     header .container {
@@ -48,22 +51,20 @@
       display: flex;
       align-items: center;
       gap: 14px;
-      font-size: 28px;
+      font-size: clamp(28px, 3vw, 34px);
       font-weight: 700;
       letter-spacing: -0.04em;
+      color: var(--primary-dark);
     }
 
-    .brand .logo {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: var(--primary-dark);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      font-size: 20px;
+    .brand img {
+      width: 48px;
+      height: 48px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: var(--card);
+      padding: 4px;
+      box-shadow: 0 1px 3px var(--shadow);
     }
 
     .nav {
@@ -74,15 +75,16 @@
     }
 
     .nav a {
-      color: white;
+      color: var(--primary);
       text-decoration: none;
-      font-weight: 600;
+      font-weight: 700;
       border-bottom: 2px solid transparent;
       padding-bottom: 5px;
     }
 
     .nav a:hover {
-      border-color: var(--primary-soft);
+      border-color: var(--accent);
+      color: var(--primary-dark);
     }
 
     main {
@@ -235,8 +237,8 @@
   <header>
     <div class="container">
       <div class="brand">
-        <span class="logo">R$</span>
-        <span>Gestão Financeira da Família</span>
+        <img src="logo.webp" alt="Fluxo Familiar">
+        <span>Fluxo Familiar</span>
       </div>
       <nav class="nav">
         <a href="#funcionalidades">Funcionalidades</a>
