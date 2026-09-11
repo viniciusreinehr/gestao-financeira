@@ -35,9 +35,8 @@
     }
 
     header {
-      background: var(--primary-soft);
+      background: #f2f8f8;
       color: var(--primary-dark);
-      padding: 22px 20px 26px;
       box-shadow: 0 3px 12px var(--shadow);
       border-bottom: 3px solid var(--primary);
     }
@@ -45,46 +44,53 @@
     header .container {
       max-width: 1080px;
       margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      min-height: 56px;
+      padding: 0 20px;
     }
 
     .brand {
       display: flex;
       align-items: center;
-      gap: 14px;
-      font-size: clamp(28px, 3vw, 34px);
-      font-weight: 700;
-      letter-spacing: -0.04em;
-      color: var(--primary-dark);
+      gap: 0.75rem;
+      min-width: 220px;
     }
 
     .brand img {
-      width: 96px;
-      height: 96px;
-      object-fit: contain;
-      border-radius: 14px;
-      background: var(--card);
-      padding: 8px;
-      box-shadow: 0 1px 3px var(--shadow);
+      max-height: 44px;
+      width: auto;
+      display: block;
     }
 
     .nav {
-      margin-top: 16px;
       display: flex;
       flex-wrap: wrap;
+      align-items: center;
       gap: 18px;
+      margin-left: auto;
     }
 
     .nav a {
       color: var(--primary);
       text-decoration: none;
       font-weight: 700;
+      font-size: 0.9rem;
       border-bottom: 2px solid transparent;
-      padding-bottom: 5px;
+      padding: 0 0.8rem;
+      min-height: 56px;
+      line-height: 56px;
+      display: flex;
+      align-items: center;
+      transition: color 180ms ease, background 180ms ease, border-color 180ms ease;
     }
 
     .nav a:hover {
       border-color: var(--accent);
       color: var(--primary-dark);
+      background-color: var(--card);
     }
 
     main {
@@ -235,16 +241,18 @@
 </head>
 <body>
   <header>
-    <div class="container">
-      <div class="brand">
-        <img src="logo.webp" alt="Fluxo Familiar">
+    <nav class="navbar">
+      <div class="container">
+        <a class="brand" href="#top" aria-label="Fluxo Familiar">
+          <img src="logo.webp" alt="Fluxo Familiar">
+        </a>
+        <div class="nav">
+          <a href="#funcionalidades">Funcionalidades</a>
+          <a href="#como-usar">Como usar</a>
+          <a href="#download">Download das versões</a>
+        </div>
       </div>
-      <nav class="nav">
-        <a href="#funcionalidades">Funcionalidades</a>
-        <a href="#como-usar">Como usar</a>
-        <a href="#download">Download das versões</a>
-      </nav>
-    </div>
+    </nav>
   </header>
 
   <main>
