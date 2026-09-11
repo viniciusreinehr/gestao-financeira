@@ -16,45 +16,7 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-## 2. Importar seu histórico da planilha (opcional, mas recomendado)
-
-Coloque sua planilha `Financeiro.xlsx` (a mesma que você me enviou) na raiz
-do projeto — ela não vem incluída no zip para não deixar o download mais
-pesado com dados pessoais/financeiros. Depois, para trazer o histórico da
-aba **Controle** para o banco de dados:
-
-```bash
-python importar_planilha.py
-```
-
-Se o arquivo estiver em outro lugar ou com outro nome, informe o caminho:
-
-```bash
-python importar_planilha.py "caminho/para/sua/planilha.xlsx"
-```
-
-O script:
-
-- Cria o banco SQLite em `instance/financeiro.db` (é criado automaticamente
-  na primeira execução).
-- Importa apenas contas de **Casa, Vinicius e Gislaine** (inclui linhas sem
-  "Local" preenchido). Linhas marcadas como **"Loja"** são sempre ignoradas.
-- Também ignora, mesmo sem "Local" preenchido, uma lista de fornecedores que
-  claramente pertencem à Loja (Tordilho Negro) — ex.: Qualitchê, Pampasul,
-  Mazutti, Sokolowski, mercados, etc. Essa lista está no topo do arquivo
-  `importar_planilha.py`, na variável `EXCLUIR_SEMPRE`, e pode ser ajustada.
-- Mapeia cada conta encontrada para uma categoria nova e mais clara (Luz,
-  Água, Internet, Telefonia, Cartão de Crédito, Financiamento, Empréstimo,
-  Consórcio, Imposto, Seguro, Combustível, Locação) através do dicionário
-  `CONTA_CONFIG`, também no topo do script.
-- Se encontrar alguma conta na planilha que não está mapeada, ela **não é
-  importada** e o nome aparece no final da execução, para você decidir se
-  quer incluí-la (basta adicionar uma linha em `CONTA_CONFIG` e rodar de
-  novo — já importados não duplicam).
-
-Se quiser rodar do zero, apague `instance/financeiro.db` antes.
-
-## 3. Rodar o aplicativo
+## 2. Rodar o aplicativo
 
 ```bash
 python run.py
@@ -64,9 +26,8 @@ Isso abre uma **janela própria** do sistema (via pywebview), sem precisar
 de navegador — veja a seção 7 para gerar isso como um executável
 independente. Se o seu Linux não tiver as bibliotecas gráficas necessárias
 (veja a seção 7), ele cai automaticamente para abrir no navegador em
-**http://localhost:5000**. Se preferir mexer sem importar nada da planilha,
-é só rodar `python run.py` direto — o banco e as categorias padrão são
-criados automaticamente.
+**http://localhost:5000**. O banco e as categorias padrão são criados
+automaticamente no primeiro uso.
 
 ### Modo desenvolvimento (para mexer no código)
 
@@ -436,7 +397,6 @@ gestao-financeira/
 │   │   └── categorias.py     # CRUD de categorias
 │   ├── templates/
 │   └── static/
-├── importar_planilha.py      # importação filtrada da planilha original
 ├── config.py
 ├── run.py
 ├── requirements.txt
@@ -502,14 +462,6 @@ aberta) — ele nunca trava por causa disso.
   atalho normal do sistema operacional apontando para esse executável — no
   Windows dá pra até trocar o ícone do atalho (clique direito → Propriedades
   → Alterar ícone).
-
-Se quiser importar o histórico da planilha (`importar_planilha.py`), isso
-ainda precisa ser feito uma vez com Python instalado (via
-`python importar_planilha.py`, como na seção 2) **antes** de gerar o
-executável — o banco de dados criado nesse passo é o mesmo que o executável
-vai usar depois, então copie a pasta `instance/` para perto dele (ou gere o
-executável primeiro, deixe ele criar o banco vazio, feche-o, rode a
-importação normalmente no mesmo lugar, e use o executável de novo).
 
 ### Observações
 

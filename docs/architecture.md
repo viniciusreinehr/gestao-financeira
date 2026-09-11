@@ -2,7 +2,7 @@
 
 > **Responsável:** 🏛️ Arquiteto Python + 🔍 Reviewer  
 > **Última revisão:** 2026-09-10  
-> **Stack:** Python 3 · Flask 3.0 · Flask-SQLAlchemy 3.1 · SQLite · PyWebView 5.x · Waitress 3.0 · openpyxl 3.1
+> **Stack:** Python 3 · Flask 3.0 · Flask-SQLAlchemy 3.1 · SQLite · PyWebView 5.x · Waitress 3.0
 
 ---
 

@@ -73,7 +73,6 @@ if __name__ == "__main__":
         "--hidden-import=sqlalchemy.dialects.sqlite",
         "--hidden-import=waitress",
         "--collect-all=webview",
-        "--collect-submodules=openpyxl",
         "--noconfirm",
         "--clean",
     ]

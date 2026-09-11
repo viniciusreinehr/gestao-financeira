@@ -80,7 +80,7 @@ def obter_resumo_mes(ano: int, mes: int) -> dict[str, Any]:
         .all()
     )
 
-    lancs = [l for l in lancs_todos if not l.pago_totalmente_com_cartao]
+    lancs = [l for l in lancs_todos if not l.absorvido_por_cartao]
 
     abertos = sorted(
         (l for l in lancs if l.status != STATUS_PAGO), key=lambda l: l.vencimento

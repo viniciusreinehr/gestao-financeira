@@ -254,7 +254,23 @@ def itens_fatura_cartao(cartao, competencia):
         ):
             itens.append({"lancamento": r.lancamento, "valor": Decimal(r.valor or 0)})
 
-    itens.sort(key=lambda i: i["lancamento"].data_pagamento)
+    # Compras/contas já vinculadas a este cartão mas ainda não pagas (ex.:
+    # uma conta recorrente cuja forma de pagamento padrão é este cartão,
+    # debitada automaticamente no vencimento) — projetadas na fatura da
+    # competência usando o vencimento, já que ainda não têm data_pagamento.
+    # Sem isso, elas nunca aparecem dentro da fatura do cartão enquanto não
+    # forem pagas, e ficam "soltas" no planejamento em vez de agrupadas.
+    pendentes = Lancamento.query.filter(
+        Lancamento.cartao_id == cartao.id,
+        Lancamento.status != STATUS_PAGO,
+    ).all()
+    for l in pendentes:
+        if competencia_fatura_cartao(cartao, l.vencimento) == competencia:
+            itens.append({"lancamento": l, "valor": Decimal(l.valor or 0)})
+
+    itens.sort(
+        key=lambda i: i["lancamento"].data_pagamento or i["lancamento"].vencimento
+    )
     return itens
 
 

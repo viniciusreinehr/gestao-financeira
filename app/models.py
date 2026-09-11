@@ -243,16 +243,31 @@ class Lancamento(BaseModel):
         return self.status == STATUS_PAGO and bool(self.cartao_id)
 
     @property
+    def absorvido_por_cartao(self):
+        """True quando este lançamento está (ou vai estar, quando for
+        pago) embutido na fatura de um cartão de crédito — independente
+        de já estar pago ou ainda pendente. Uma conta recorrente cuja
+        forma de pagamento padrão é um cartão, por exemplo, já nasce com
+        cartao_id preenchido bem antes do vencimento, e a fatura do cartão
+        já projeta esse valor (ver itens_fatura_cartao). Por isso ela deve
+        sair da lista solta do planejamento desde já, não só depois de
+        paga — do contrário fica invisível dentro da fatura projetada
+        (que já conta com o valor dela) e visível de novo como linha solta
+        (contando o valor uma segunda vez)."""
+        return bool(self.cartao_id)
+
+    @property
     def valor_contabilizavel_no_mes(self):
         """Valor que este lançamento deve contribuir para os totais do
-        planejamento mensal. Lançamentos pagos integralmente com cartão
-        contribuem 0 (já estão na fatura do cartão); num pagamento dividido
-        que incluiu uma parte no cartão, só a parte que NÃO foi no cartão
-        conta aqui — o resto já está na fatura."""
-        if self.status != STATUS_PAGO:
-            return self.valor
+        planejamento mensal. Lançamentos vinculados a um cartão (pagos ou
+        ainda pendentes) contribuem 0 aqui — o valor já está (ou será)
+        contabilizado via a fatura projetada do cartão. Num pagamento
+        dividido que incluiu uma parte no cartão, só a parte que NÃO foi
+        no cartão conta aqui — o resto já está na fatura."""
         if self.cartao_id:
             return Decimal(0)
+        if self.status != STATUS_PAGO:
+            return self.valor
         valor = Decimal(self.valor_pago if self.valor_pago is not None else self.valor)
         for r in self.rateios:
             if r.tipo == "cartao":
