@@ -1,0 +1,46 @@
+[project]
+name = "gestao-financeira"
+version = "1.0.0"
+description = "Sistema de Gestão Financeira Pessoal Desktop"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask>=3.0.3",
+    "Flask-SQLAlchemy>=3.1.1",
+    "openpyxl>=3.1.5",
+    "waitress>=3.0.0",
+    "pywebview>=5.3",
+]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+exclude = [
+    ".venv",
+    "build",
+    "dist",
+    "instance",
+    ".pytest_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+    "E741",  # ambiguous variable name 'l' (usado convencionalmente para lancamentos)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]

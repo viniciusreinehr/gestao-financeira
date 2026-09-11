@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar receita' if receita else 'Nova receita' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-7">
+<div class="card p-4">
+    <h4 class="mb-3">{{ 'Editar receita' if receita else 'Nova receita' }}</h4>
+    <form method="post">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">Tipo</label>
+                <input type="text" class="form-control" name="tipo" required
+                    placeholder="Ex.: Salário, Comissão, Resgate de aplicação, Venda de item"
+                    value="{{ receita.tipo if receita else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Origem</label>
+                <input type="text" class="form-control" name="origem" required placeholder="Ex.: Olist, Delfino Cotas"
+                    value="{{ receita.origem if receita else '' }}">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Responsável</label>
+                <select class="form-select" name="responsavel_id">
+                    <option value="">Não informado</option>
+                    {% for l in locais %}
+                        <option value="{{ l.id }}" {{ 'selected' if receita and receita.responsavel_id == l.id }}>{{ l.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Valor (R$)</label>
+                <input type="text" class="form-control" name="valor" data-money required
+                    value="{{ '%.2f'|format(receita.valor)|replace('.', ',') if receita else '' }}">
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Recorrência</label>
+                <select class="form-select" name="recorrencia" id="recorrencia" onchange="toggleRecorrencia()">
+                    {% for valor, label in recorrencias %}
+                        <option value="{{ valor }}" {{ 'selected' if receita and receita.recorrencia == valor }}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">
+                    Recorrente: entra todo mês (salário, comissão fixa...). Receita única: entra uma vez só,
+                    numa data específica (resgate de aplicação, venda de um item, um bônus pontual...).
+                </div>
+            </div>
+
+            <div id="blocoRecorrente" class="col-12">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Regra de data</label>
+                        <select class="form-select" name="regra_data" id="regraData" onchange="toggleRegra()">
+                            {% for valor, label in regras %}
+                                <option value="{{ valor }}" {{ 'selected' if receita and receita.regra_data == valor }}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6" id="campoDiaFixo">
+                        <label class="form-label">Dia fixo do mês</label>
+                        <input type="number" min="1" max="31" class="form-control" name="dia_fixo"
+                            value="{{ receita.dia_fixo if receita and receita.dia_fixo else '' }}">
+                    </div>
+                    <div class="col-md-6" id="campoDiaUtil" style="display:none;">
+                        <label class="form-label">Enésimo dia útil</label>
+                        <input type="number" min="1" max="23" class="form-control" name="n_dia_util"
+                            value="{{ receita.n_dia_util if receita and receita.n_dia_util else '' }}"
+                            placeholder="Ex.: 5 = 5º dia útil do mês">
+                    </div>
+                </div>
+            </div>
+
+            <div id="blocoUnica" class="col-md-6" style="display:none;">
+                <label class="form-label">Data em que o dinheiro entra</label>
+                <input type="date" class="form-control" name="data_unica"
+                    value="{{ receita.data_unica.isoformat() if receita and receita.data_unica else '' }}">
+                <div class="form-text">Essa receita só aparece no dashboard no mês dessa data.</div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Observação</label>
+                <textarea class="form-control" name="observacao" rows="2">{{ receita.observacao if receita else '' }}</textarea>
+            </div>
+
+            {% if receita %}
+            <div class="col-12">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="ativo" id="ativo" {{ 'checked' if receita.ativo }}>
+                    <label class="form-check-label" for="ativo">Receita ativa</label>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Salvar</button>
+            <a href="{{ url_for('receitas.listar') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+</div>
+</div>
+
+<script>
+function toggleRegra() {
+    const regra = document.getElementById('regraData').value;
+    document.getElementById('campoDiaFixo').style.display = (regra === 'dia_fixo') ? '' : 'none';
+    document.getElementById('campoDiaUtil').style.display = (regra === 'dia_util') ? '' : 'none';
+}
+function toggleRecorrencia() {
+    const recorrencia = document.getElementById('recorrencia').value;
+    document.getElementById('blocoRecorrente').style.display = (recorrencia === 'recorrente') ? '' : 'none';
+    document.getElementById('blocoUnica').style.display = (recorrencia === 'unica') ? '' : 'none';
+}
+document.addEventListener('DOMContentLoaded', () => {
+    toggleRegra();
+    toggleRecorrencia();
+});
+</script>
+{% endblock %}

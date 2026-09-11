@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}Locais / Responsáveis{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card p-3">
+            <h5 class="mb-3"><i class="bi bi-people"></i> Locais / Responsáveis</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nome</th>
+                            <th class="text-end">Contas ativas</th>
+                            <th class="text-end">Custo mensal estimado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in resumo %}
+                        <tr>
+                            <td>
+                                <span class="categoria-dot" style="background: {{ item.local.cor }};"></span>
+                                <span class="fw-semibold">{{ item.local.nome }}</span>
+                            </td>
+                            <td class="text-end">{{ item.qtd_contas }}</td>
+                            <td class="text-end text-money">{{ item.total_mensal | moeda }}</td>
+                            <td class="text-end">
+                                <a href="{{ url_for('locais.detalhe', local_id=item.local.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-list-ul"></i> Detalhar
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    onclick="abrirModalEditarLocal('{{ item.local.id }}', '{{ item.local.nome }}', '{{ item.local.cor }}')">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form method="post" action="{{ url_for('locais.excluir', local_id=item.local.id) }}" class="d-inline"
+                                    onsubmit="return confirm('Remover {{ item.local.nome }}?');">
+                                    <button class="btn btn-sm btn-outline-danger" {{ 'disabled' if item.qtd_contas or item.qtd_receitas }}>
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr><td colspan="4" class="text-center text-muted py-4">Nenhum local/responsável cadastrado.</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card p-3">
+            <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Novo local / responsável</h5>
+            <form method="post" action="{{ url_for('locais.novo') }}">
+                <div class="mb-3">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-control" name="nome" placeholder="Ex.: Casa, Vinicius, Gislaine" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cor</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for cor in cores %}
+                            <label class="border rounded-circle" style="width:28px;height:28px;background:{{ cor }};cursor:pointer;">
+                                <input type="radio" value="{{ cor }}" class="d-none" onclick="document.getElementById('corNovoLocal').value='{{ cor }}'">
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="cor" id="corNovoLocal" value="{{ cores[0] }}">
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check2"></i> Cadastrar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de edição -->
+<div class="modal fade" id="modalEditarLocal" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" id="formEditarLocal">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar local / responsável</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-control" name="nome" id="editarLocalNome" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cor</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for cor in cores %}
+                            <label class="border rounded-circle" style="width:28px;height:28px;background:{{ cor }};cursor:pointer;">
+                                <input type="radio" value="{{ cor }}" class="d-none" onclick="document.getElementById('editarLocalCor').value='{{ cor }}'">
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="cor" id="editarLocalCor">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function abrirModalEditarLocal(id, nome, cor) {
+    document.getElementById("formEditarLocal").action = `/locais/${id}/editar`;
+    document.getElementById("editarLocalNome").value = nome;
+    document.getElementById("editarLocalCor").value = cor;
+    new bootstrap.Modal(document.getElementById("modalEditarLocal")).show();
+}
+</script>
+{% endblock %}

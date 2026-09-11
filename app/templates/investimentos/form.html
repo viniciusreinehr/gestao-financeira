@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar investimento' if inv else 'Novo investimento' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-7">
+<div class="card p-4">
+    <h4 class="mb-3">{{ 'Editar investimento' if inv else 'Novo investimento' }}</h4>
+    <form method="post">
+        <div class="row g-3">
+            <div class="col-md-7">
+                <label class="form-label">Nome / apelido</label>
+                <input type="text" class="form-control" name="nome" required placeholder="Ex.: CDB Reserva de Emergência"
+                    value="{{ inv.nome if inv else '' }}">
+            </div>
+            <div class="col-md-5">
+                <label class="form-label">Banco / Corretora</label>
+                <input type="text" class="form-control" name="banco" placeholder="Ex.: Itaú, Nubank, XP"
+                    value="{{ inv.banco if inv else '' }}">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Tipo</label>
+                <select class="form-select" name="tipo">
+                    {% for t in tipos %}
+                        <option value="{{ t }}" {{ 'selected' if inv and inv.tipo == t }}>{{ t }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Valor inicial aplicado (R$)</label>
+                <input type="text" class="form-control" name="valor_inicial" data-money required
+                    value="{{ '%.2f'|format(inv.valor_inicial)|replace('.', ',') if inv else '' }}">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Data da aplicação</label>
+                <input type="date" class="form-control" name="data_aplicacao" required
+                    value="{{ inv.data_aplicacao.isoformat() if inv else '' }}">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Vencimento (opcional)</label>
+                <input type="date" class="form-control" name="vencimento"
+                    value="{{ inv.vencimento.isoformat() if inv and inv.vencimento else '' }}">
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Taxa mensal estimada (% a.m.)</label>
+                <input type="text" class="form-control" name="taxa_mensal_pct" placeholder="Ex.: 0,90"
+                    value="{{ (inv.taxa_mensal_pct|string).replace('.', ',') if inv and inv.taxa_mensal_pct else '' }}">
+                <div class="form-text">Usada para calcular sozinho o valor atualizado (juros compostos). Deixe em branco se preferir atualizar manualmente.</div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check mt-4 pt-2">
+                    <input type="checkbox" class="form-check-input" name="liquidez_diaria" id="liquidez"
+                        {{ 'checked' if not inv or inv.liquidez_diaria }}>
+                    <label class="form-check-label" for="liquidez">Liquidez diária</label>
+                </div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Observação</label>
+                <textarea class="form-control" name="observacao" rows="2">{{ inv.observacao if inv else '' }}</textarea>
+            </div>
+
+            {% if inv %}
+            <div class="col-12">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="ativo" id="ativo" {{ 'checked' if inv.ativo }}>
+                    <label class="form-check-label" for="ativo">Investimento ativo</label>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Salvar</button>
+            <a href="{{ url_for('investimentos.listar') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+</div>
+</div>
+{% endblock %}

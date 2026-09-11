@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Categorias{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card p-3">
+            <h5 class="mb-3"><i class="bi bi-tags"></i> Categorias cadastradas</h5>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Categoria</th>
+                            <th>Contas vinculadas</th>
+                            <th class="text-end">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in categorias %}
+                        <tr>
+                            <td><span class="badge-categoria" style="--dot-color: {{ c.cor }}"><i
+                                        class="bi {{ c.icone }}"></i> {{ c.nome }}</span>
+                            </td>
+                            <td>{{ c.contas |
+                                length }}</td>
+                            <td class="text-end">
+                                <form method="post" action="{{ url_for('categorias.excluir', categoria_id=c.id) }}"
+                                    onsubmit="return confirm('Remover categoria {{ c.nome }}?');" class="d-inline">
+                                    <button class="btn btn-sm btn-outline-danger" {{ 'disabled' if c.contas }}><i
+                                            class="bi bi-trash"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card p-3">
+            <h5 class="mb-3"><i class="bi bi-plus-circle"></i> Nova categoria</h5>
+            <form method="post" action="{{ url_for('categorias.nova') }}">
+                <div class="mb-3">
+                    <label class="form-label">Nome</label>
+                    <input type="text" class="form-control" name="nome" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cor</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for cor in cores %}
+                        <label class="border rounded-circle list-colors" style="--dot-color: {{ cor }};">
+                            <input type="radio" value="{{ cor }}" class="d-none">
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <input type="hidden" name="cor" id="corSelecionada" value="{{ cores[0] }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Ícone (Bootstrap Icons)</label>
+                    <input type="text" class="form-control" name="icone" placeholder="bi-tag" value="bi-tag">
+                </div>
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-check2"></i> Criar
+                    categoria</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.querySelectorAll('label.rounded-circle').forEach(label => {
+        label.addEventListener('click', () => {
+            document.querySelectorAll('label.rounded-circle').forEach(l => l.style.outline = 'none');
+            label.style.outline = '3px solid #333';
+            document.getElementById('corSelecionada').value = label.querySelector('input').value;
+        });
+    });
+</script>
+{% endblock %}

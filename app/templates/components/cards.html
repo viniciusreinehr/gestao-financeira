@@ -1,0 +1,6 @@
+{% macro kpi_card(titulo, valor, icone, cor_texto="") %}
+<div class="card card-kpi p-3 h-100">
+    <div class="text-muted small"><i class="bi {{ icone }}"></i> {{ titulo }}</div>
+    <div class="kpi-value text-money {{ cor_texto }}">{{ valor | moeda }}</div>
+</div>
+{% endmacro %}

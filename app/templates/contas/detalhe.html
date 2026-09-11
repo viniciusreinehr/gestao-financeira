@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% from "components/badges.html" import categoria_badge %}
+{% block title %}{{ conta.nome }}{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h4 class="mb-0">
+            {{ categoria_badge(conta.categoria) }}
+            {{ conta.nome }}
+        </h4>
+        <p class="text-muted mb-0">
+            {% if conta.local_obj %}<span class="categoria-dot"
+                style="--dot-color: {{ conta.local_obj.cor }};"></span>{{ conta.local_obj.nome }} ·{% endif %}
+            {% if conta.tipo_lancamento == 'unico' %}Único
+            {% elif conta.tipo_lancamento == 'recorrente' %}Recorrente
+            {% else %}Parcelado{% if conta.num_parcelas %} ({{ conta.parcelas_pagas }}/{{ conta.num_parcelas }} pagas){%
+            endif %}{% endif %}
+            {% if conta.quitada %} · <span class="badge bg-success">Quitada</span>{% endif %}
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        {% if conta.tipo_lancamento == 'parcelado' and not conta.quitada %}
+        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalQuitar">
+            <i class="bi bi-flag"></i> Quitar antecipadamente
+        </button>
+        {% endif %}
+        {% if not conta.eh_cartao %}
+        <button class="btn btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalAtualizarAbertos">
+            <i class="bi bi-arrow-repeat"></i> Atualizar lançamentos em aberto
+        </button>
+        {% endif %}
+        <a href="{{ url_for('contas.editar', conta_id=conta.id) }}" class="btn btn-outline-secondary"><i
+                class="bi bi-pencil"></i> Editar</a>
+        <button class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalExcluirConta">
+            <i class="bi bi-trash"></i> Excluir
+        </button>
+    </div>
+</div>
+
+{% if conta.eh_cartao %}
+<div class="alert alert-info d-flex align-items-center gap-2">
+    <i class="bi bi-credit-card fs-5"></i>
+    <div>
+        Cartão de crédito — fecha dia <strong>{{ conta.dia_fechamento }}</strong>,
+        vence dia <strong>{{ conta.dia_vencimento }}</strong>. O valor de cada fatura é
+        calculado automaticamente somando as contas pagas com este cartão.
+    </div>
+</div>
+{% endif %}
+
+{% if conta.provisionar %}
+<div class="alert alert-info d-flex align-items-center gap-2">
+    <i class="bi bi-info-circle fs-5"></i>
+    <div>
+        Esta conta é provisionada automaticamente pela média dos últimos meses pagos:
+        <strong class="text-money">{{ media_provisionamento | moeda }}</strong>.
+        Quando a fatura chegar, clique em "Atualizar" no lançamento do mês para lançar o valor real e o vencimento
+        correto.
+    </div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-lancamentos align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Competência</th>
+                    <th>Vencimento</th>
+                    <th>Parcela</th>
+                    <th class="text-end">Valor</th>
+                    <th>Forma de pagamento</th>
+                    <th>Status</th>
+                    <th class="text-end">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for l in lancamentos %}
+                <tr class="{{ 'atrasado' if l.atrasado }} {{ 'pago' if l.status == 'pago' }}">
+                    <td>{{ l.competencia | competencia }}</td>
+                    <td>{{ l.vencimento | data }}</td>
+                    <td>{{ l.parcela_num or '-' }}{% if conta.num_parcelas %}/{{ conta.num_parcelas }}{% endif %}</td>
+                    <td class="text-end text-money">
+                        {{ l.valor_exibicao | moeda }}
+                        {% if l.diferenca_pago_nominal %}
+                        <div class="small {{ 'text-danger' if l.diferenca_pago_nominal > 0 else 'text-success' }}">
+                            {{ '+' if l.diferenca_pago_nominal > 0 }}{{ l.diferenca_pago_nominal | moeda }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td class="small">
+                        {{ l.forma_pagamento or '-' }}
+                        {% if conta.eh_cartao and compras_por_fatura.get(l.competencia) %}
+                        <details class="mt-1">
+                            <summary class="text-muted" style="cursor:pointer;">
+                                {{ compras_por_fatura[l.competencia] | length }} compra(s)
+                            </summary>
+                            <ul class="mb-0 ps-3">
+                                {% for item in compras_por_fatura[l.competencia] %}
+                                <li>
+                                    <a href="{{ url_for('contas.detalhe', conta_id=item.lancamento.conta_id) }}">{{
+                                        item.lancamento.conta.nome }}</a>
+                                    — {{ item.valor | moeda }} ({{ item.lancamento.data_pagamento | data }})
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </details>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if l.status == 'pago' %}
+                        <span class="badge bg-success">Pago em {{ l.data_pagamento | data }}</span>
+                        {% elif l.status == 'provisionado' %}
+                        <span class="badge bg-secondary">Provisionado</span>
+                        {% else %}
+                        <span class="badge bg-warning text-dark">Pendente</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <button type="button" class="btn btn-sm btn-outline-primary"
+                            onclick="abrirModalLancamento(this)" data-id="{{ l.id }}"
+                            data-nome="{{ conta.nome }} — {{ l.competencia | competencia }}"
+                            data-valor="{{ '%.2f'|format(l.valor)|replace('.', ',') }}"
+                            data-vencimento="{{ l.vencimento.isoformat() }}" data-competencia="{{ l.competencia }}"
+                            data-forma-valor="{{ l.forma_pagamento_valor }}"
+                            data-rateios="{{ l.rateios_para_form | tojson_attr }}"
+                            data-marcar-pago="{{ '1' if l.status != 'pago' else '0' }}"
+                            data-ja-pago="{{ '1' if l.status == 'pago' else '0' }}"
+                            data-valor-pago="{{ '%.2f'|format(l.valor_pago)|replace('.', ',') if l.valor_pago else '' }}"
+                            data-data-pagamento="{{ l.data_pagamento.isoformat() if l.data_pagamento else '' }}">
+                            <i class="bi bi-pencil-square"></i> {{ 'Atualizar' if l.status != 'pago' else 'Editar' }}
+                        </button>
+                        <form method="post" action="{{ url_for('dashboard.excluir_lancamento', lancamento_id=l.id) }}"
+                            class="d-inline" onsubmit="return confirm('Remover este lançamento?');">
+                            <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Nenhum lançamento ainda.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% include "_modal_lancamento.html" %}
+
+<!-- Modal de Quitação -->
+<div class="modal fade" id="modalQuitar" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="{{ url_for('contas.quitar', conta_id=conta.id) }}">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-flag"></i> Quitar "{{ conta.nome }}"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">
+                    As parcelas em aberto serão baixadas automaticamente com o valor da quitação
+                    dividido igualmente entre elas.
+                </p>
+                <div class="mb-3">
+                    <label class="form-label">Valor total da quitação (R$)</label>
+                    <input type="text" class="form-control" name="valor_quitacao" data-money required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Data da quitação</label>
+                    <input type="date" class="form-control" name="data_quitacao" value="{{ hoje.isoformat() }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Observação</label>
+                    <input type="text" class="form-control" name="observacao"
+                        placeholder="Ex.: quitado via portabilidade">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger">Confirmar quitação</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de atualização em massa dos lançamentos em aberto -->
+<div class="modal fade" id="modalAtualizarAbertos" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post"
+            action="{{ url_for('contas.atualizar_lancamentos', conta_id=conta.id) }}">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-arrow-repeat"></i> Atualizar lançamentos em aberto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Isso vai aplicar o valor de referência atual da conta
+                    (<strong class="text-money">
+                        {{ media_provisionamento | moeda if conta.provisionar else conta.valor_base | moeda }}
+                    </strong>{{ ' — média de provisionamento recalculada' if conta.provisionar else '' }})
+                    a todos os <strong>{{ lancamentos_abertos_count }} lançamento(s) ainda não pago(s)</strong>
+                    dessa conta.
+                </p>
+                <p class="text-muted small mb-3">
+                    Lançamentos já pagos nunca são alterados — isso serve para corrigir um
+                    valor que estava errado (ex.: parcela cadastrada como R$ 2.500,80 quando
+                    na verdade era R$ 2.420,10).
+                </p>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="atualizar_dia_vencimento"
+                        id="atualizarDiaBtn">
+                    <label class="form-check-label" for="atualizarDiaBtn">
+                        Também ajustar o dia de vencimento desses lançamentos para o dia
+                        cadastrado na conta ({{ conta.dia_vencimento }})
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-warning" {{ 'disabled' if not lancamentos_abertos_count }}>
+                    Atualizar {{ lancamentos_abertos_count }} lançamento(s)
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal de exclusão da conta -->
+<div class="modal fade" id="modalExcluirConta" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" action="{{ url_for('contas.excluir', conta_id=conta.id) }}">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle"></i> Excluir "{{ conta.nome
+                    }}"</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Isso vai excluir a conta <strong>"{{ conta.nome }}"</strong> e
+                    <strong>todos os {{ lancamentos | length }} lançamento(s)</strong> associados a ela
+                    (pagos e pendentes) — <strong>essa ação não pode ser desfeita.</strong>
+                </p>
+                {% if conta.eh_cartao %}
+                <p class="text-muted small mb-0">
+                    Como esta conta é um cartão de crédito, as contas que foram pagas com ele
+                    continuam existindo normalmente — só deixam de estar vinculadas a este cartão.
+                </p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger">
+                    <i class="bi bi-trash"></i> Sim, excluir definitivamente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

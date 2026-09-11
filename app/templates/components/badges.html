@@ -1,0 +1,13 @@
+{% macro status_badge(status) %}
+    {% if status == 'pago' %}
+        <span class="badge bg-success">Pago</span>
+    {% elif status == 'provisionado' %}
+        <span class="badge bg-secondary">Provisionado</span>
+    {% else %}
+        <span class="badge bg-warning text-dark">Pendente</span>
+    {% endif %}
+{% endmacro %}
+
+{% macro categoria_badge(categoria) %}
+    <span class="badge-categoria" style="background:{{ categoria.cor }}">{{ categoria.nome }}</span>
+{% endmacro %}

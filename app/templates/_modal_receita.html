@@ -1,0 +1,26 @@
+<div class="modal fade" id="modalReceita" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="formReceita" method="POST" class="modal-content">
+            <input type="hidden" name="competencia" id="inputReceitaCompetencia">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalReceitaTitulo">Confirmar recebimento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3" id="modalReceitaPrevisto"></p>
+                <div class="mb-3">
+                    <label class="form-label">Valor efetivamente recebido (R$)</label>
+                    <input type="text" class="form-control" name="valor_recebido" id="inputReceitaValor" data-money required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Data do recebimento</label>
+                    <input type="date" class="form-control" name="data_recebimento" id="inputReceitaData">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Confirmar</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% from "components/badges.html" import categoria_badge %}
+{% block title %}Contas / Controle{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h4 class="mb-0"><i class="bi bi-receipt"></i> Controle de Contas</h4>
+        <p class="text-muted mb-0">Custo mensal total estimado (contas ativas): <strong class="text-money">{{
+                total_mensal | moeda }}</strong></p>
+    </div>
+    <a href="{{ url_for('contas.nova') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nova conta</a>
+</div>
+
+<div class="card p-3 mb-3">
+    <form class="row g-2" method="get">
+        <div class="col-auto">
+            <select class="form-select form-select-sm" name="categoria_id" onchange="this.form.submit()">
+                <option value="">Todas as categorias</option>
+                {% for c in categorias %}
+                <option value="{{ c.id }}" {{ 'selected' if categoria_id==c.id }}>{{ c.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <select class="form-select form-select-sm" name="local_id" onchange="this.form.submit()">
+                <option value="">Todos os locais</option>
+                {% for l in locais %}
+                <option value="{{ l.id }}" {{ 'selected' if local_id==l.id }}>{{ l.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <select class="form-select form-select-sm" name="situacao" onchange="this.form.submit()">
+                <option value="">Todas as situações</option>
+                <option value="ativa" {{ 'selected' if situacao=='ativa' }}>Ativa</option>
+                <option value="inativa" {{ 'selected' if situacao=='inativa' }}>Inativa</option>
+                <option value="quitada" {{ 'selected' if situacao=='quitada' }}>Quitada</option>
+            </select>
+        </div>
+        {% if categoria_id or local_id or situacao %}
+        <div class="col-auto">
+            <a href="{{ url_for('contas.listar') }}" class="btn btn-sm btn-outline-secondary">Limpar filtros</a>
+        </div>
+        {% endif %}
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Conta</th>
+                    <th>Categoria</th>
+                    <th>Local</th>
+                    <th>Tipo</th>
+                    <th class="text-end">Custo mensal (méd.)</th>
+                    <th>Situação</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c, indentada in contas_agrupadas %}
+                <tr class="{{ 'text-muted' if not c.ativa }} {{ 'linha-vinculada-cartao' if indentada }}">
+                    <td>
+                        {% if indentada %}<i class="bi bi-arrow-return-right text-muted me-1"></i>{% endif %}
+                        <a href="{{ url_for('contas.detalhe', conta_id=c.id) }}"
+                            class="text-decoration-none fw-semibold">{{ c.nome }}</a>
+                        {% if c.eh_cartao %}<i class="bi bi-credit-card text-muted ms-1"
+                            title="Cartão de crédito"></i>{% endif %}
+                        {% if c.provisionar %}<span
+                            class="badge bg-info-subtle text-info-emphasis border">provisionada</span>{% endif %}
+                    </td>
+                    <td>{{ categoria_badge(c.categoria) }}</td>
+                    <td>
+                        {% if c.local_obj %}
+                        <span class="categoria-dot" style="--dot-color: {{ c.local_obj.cor }};"></span>{{
+                        c.local_obj.nome }}
+                        {% else %}
+                        <span class="text-muted">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if c.eh_cartao %}Cartão de crédito
+                        {% elif c.tipo_lancamento == 'unico' %}Único
+                        {% elif c.tipo_lancamento == 'recorrente' %}Recorrente
+                        {% else %}Parcelado {% if c.num_parcelas %}({{ c.parcelas_pagas }}/{{ c.num_parcelas }}){% endif
+                        %}{% endif %}
+                    </td>
+                    <td class="text-end text-money">{{ custos.get(c.id, 0) | moeda }}</td>
+                    <td>
+                        {% if c.quitada %}<span class="badge bg-success">Quitada</span>
+                        {% elif not c.ativa %}<span class="badge bg-secondary">Inativa</span>
+                        {% else %}<span class="badge bg-primary-subtle text-primary-emphasis border">Ativa</span>{%
+                        endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{{ url_for('contas.editar', conta_id=c.id) }}"
+                            class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                            onclick="abrirModalExcluirConta(this)" data-id="{{ c.id }}" data-nome="{{ c.nome }}"
+                            data-lancamentos="{{ c.lancamentos | length }}"
+                            data-cartao="{{ '1' if c.eh_cartao else '0' }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">Nenhuma conta encontrada com esses filtros.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal compartilhado de exclusão (preenchido via JS conforme a linha clicada) -->
+<div class="modal fade" id="modalExcluirConta" tabindex="-1">
+    <div class="modal-dialog">
+        <form class="modal-content" method="post" id="formExcluirConta">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle"></i> Excluir conta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="textoExcluirConta"></p>
+                <p class="text-muted small mb-0" id="textoExcluirCartao" style="display:none;">
+                    Como esta conta é um cartão de crédito, as contas que foram pagas com ele
+                    continuam existindo normalmente — só deixam de estar vinculadas a este cartão.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Sim, excluir
+                    definitivamente</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function abrirModalExcluirConta(btn) {
+        const id = btn.dataset.id;
+        const nome = btn.dataset.nome;
+        const lancamentos = btn.dataset.lancamentos;
+        const ehCartao = btn.dataset.cartao === "1";
+
+        document.getElementById("formExcluirConta").action = `/contas/${id}/excluir`;
+        document.getElementById("textoExcluirConta").innerHTML =
+            `Isso vai excluir a conta <strong>"${nome}"</strong> e <strong>todos os ${lancamentos} lançamento(s)</strong> ` +
+            `associados a ela (pagos e pendentes) — <strong>essa ação não pode ser desfeita.</strong>`;
+        document.getElementById("textoExcluirCartao").style.display = ehCartao ? "" : "none";
+
+        new bootstrap.Modal(document.getElementById("modalExcluirConta")).show();
+    }
+</script>
+{% endblock %}

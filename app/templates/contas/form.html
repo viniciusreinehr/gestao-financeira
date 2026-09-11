@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Editar conta' if conta else 'Nova conta' }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+<div class="col-lg-8">
+<div class="card p-4">
+    <h4 class="mb-3">{{ 'Editar conta' if conta else 'Nova conta' }}</h4>
+    <form method="post">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label">Nome da conta</label>
+                <input type="text" class="form-control" name="nome" required value="{{ conta.nome if conta else '' }}" placeholder="Ex.: Copel, MEI, Financiamento Tucson...">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Local / Responsável</label>
+                <select class="form-select" name="local_id">
+                    <option value="">Não informado</option>
+                    {% for l in locais %}
+                        <option value="{{ l.id }}" {{ 'selected' if conta and conta.local_id == l.id }}>{{ l.nome }}</option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">
+                    <a href="{{ url_for('locais.listar') }}" target="_blank">Cadastrar um novo local/responsável</a>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label class="form-label">Categoria</label>
+                <select class="form-select" name="categoria_id" required>
+                    {% for c in categorias %}
+                        <option value="{{ c.id }}" {{ 'selected' if conta and conta.categoria_id == c.id }}>{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-6">
+                <div class="form-check mt-4 pt-2">
+                    <input type="checkbox" class="form-check-input" name="eh_cartao" id="ehCartao"
+                        {{ 'checked' if conta and conta.eh_cartao }} onchange="toggleCartao()">
+                    <label class="form-check-label fw-semibold" for="ehCartao">
+                        <i class="bi bi-credit-card"></i> Esta conta é um Cartão de Crédito
+                    </label>
+                </div>
+                <div class="form-text">
+                    Ao marcar, outras contas poderão ser pagas usando este cartão — o valor
+                    entra automaticamente na fatura do mês certo.
+                </div>
+            </div>
+
+            <div id="blocoNormal" class="col-12">
+                <div class="row g-3">
+                    {% if not conta %}
+                    <div class="col-md-6">
+                        <label class="form-label">Data em que a conta foi feita</label>
+                        <input type="date" class="form-control" name="data_criacao" id="dataCriacao" onchange="sincronizarDataJaPaga()">
+                        <div class="form-text">
+                            Deixe em branco se é de hoje. Preencha se estiver lançando algo
+                            retroativo (ex.: uma compra do mês passado que esqueceu de lançar).
+                        </div>
+                    </div>
+                    {% endif %}
+                    <div class="col-md-6">
+                        <label class="form-label">Tipo de lançamento</label>
+                        <select class="form-select" name="tipo_lancamento" id="tipoLancamento" onchange="toggleCampos()">
+                            {% for valor, label in tipos %}
+                                <option value="{{ valor }}" {{ 'selected' if conta and conta.tipo_lancamento == valor }}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">Único: acontece uma vez. Recorrente: repete todo mês (ex.: MEI). Parcelado: tem fim definido (ex.: Ademicon, financiamentos).</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Valor de referência (R$)</label>
+                        <input type="text" class="form-control" name="valor_base" data-money
+                            value="{{ '%.2f'|format(conta.valor_base)|replace('.', ',') if conta else '' }}">
+                        <div class="form-text">Usado como padrão ao gerar novos lançamentos (ou valor inicial da parcela).</div>
+                    </div>
+                    <div class="col-md-6" id="campoParcelas">
+                        <label class="form-label">Nº de parcelas</label>
+                        <input type="number" min="1" class="form-control" name="num_parcelas" value="{{ conta.num_parcelas if conta and conta.num_parcelas else '' }}">
+                    </div>
+                    <div class="col-md-6" id="campoProvisionar">
+                        <div class="form-check mt-4 pt-2">
+                            <input type="checkbox" class="form-check-input" name="provisionar" id="provisionar"
+                                {{ 'checked' if conta and conta.provisionar }}>
+                            <label class="form-check-label" for="provisionar">
+                                Provisionar automaticamente pela média dos últimos meses (luz, água, internet, telefone...)
+                            </label>
+                        </div>
+                    </div>
+
+                    {% if not conta %}
+                    <div class="col-12" id="blocoJaPaga">
+                        <div class="alert alert-light border mb-0">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" name="ja_paga" id="jaPaga" onchange="toggleJaPaga()">
+                                <label class="form-check-label fw-semibold" for="jaPaga">
+                                    <i class="bi bi-check2-circle"></i> Já foi paga (lançar como paga agora)
+                                </label>
+                            </div>
+                            <div class="form-text mt-1">
+                                Use para uma compra que você já fez — ex.: uma compra parcelada na
+                                loja com o cartão de crédito. Se a conta for <strong>parcelada</strong>
+                                e você escolher um <strong>cartão de crédito</strong> como forma de
+                                pagamento, todas as parcelas já entram automaticamente, uma em cada
+                                fatura dos próximos meses.
+                            </div>
+                            <div class="row g-3 mt-1" id="camposJaPaga" style="display:none;">
+                                <div class="col-md-6">
+                                    <label class="form-label">Forma de pagamento</label>
+                                    <select class="form-select" name="ja_paga_forma">
+                                        <optgroup label="Geral">
+                                            {% for op in opcoes_forma_pagamento.genericas %}
+                                                <option value="{{ op.value }}">{{ op.label }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% if opcoes_forma_pagamento.cartoes %}
+                                        <optgroup label="Cartões de crédito">
+                                            {% for op in opcoes_forma_pagamento.cartoes %}
+                                                <option value="{{ op.value }}">{{ op.label }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% endif %}
+                                        {% if opcoes_forma_pagamento.receitas %}
+                                        <optgroup label="Pago com o dinheiro de uma receita">
+                                            {% for op in opcoes_forma_pagamento.receitas %}
+                                                <option value="{{ op.value }}">{{ op.label }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Data do pagamento</label>
+                                    <input type="date" class="form-control" name="ja_paga_data" id="jaPagaData" onchange="sincronizarDiaVencimento()">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Valor pago (R$)</label>
+                                    <input type="text" class="form-control" name="ja_paga_valor" data-money placeholder="usa o valor de referência se vazio">
+                                </div>
+                                <div class="col-12" id="campoValorETotal" style="display:none;">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="ja_paga_valor_e_total" id="jaPagaValorETotal" checked>
+                                        <label class="form-check-label" for="jaPagaValorETotal">
+                                            O valor de referência (e o valor pago) acima é o <strong>total da compra</strong> —
+                                            dividir entre as parcelas
+                                        </label>
+                                    </div>
+                                    <div class="form-text">
+                                        Desmarque se o valor informado já é o valor de <strong>cada</strong> parcela.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label" id="labelDiaVencimento">Dia de vencimento</label>
+                <input type="number" min="1" max="31" class="form-control" name="dia_vencimento" value="{{ conta.dia_vencimento if conta else 10 }}">
+            </div>
+            <div class="col-md-4" id="campoDiaFechamento" style="display:none;">
+                <label class="form-label">Dia de fechamento da fatura</label>
+                <input type="number" min="1" max="31" class="form-control" name="dia_fechamento"
+                    value="{{ conta.dia_fechamento if conta and conta.dia_fechamento else '' }}">
+                <div class="form-text">Compras depois desse dia entram na fatura do mês seguinte.</div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Forma de pagamento padrão</label>
+                <select class="form-select" name="forma_pagamento_padrao" id="formaPagamentoPadrao">
+                    <optgroup label="Geral">
+                        {% for op in opcoes_forma_pagamento.genericas %}
+                            <option value="{{ op.value }}" {{ 'selected' if forma_pagamento_padrao_atual == op.value }}>{{ op.label }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% if opcoes_forma_pagamento.cartoes %}
+                    <optgroup label="Cartões de crédito">
+                        {% for op in opcoes_forma_pagamento.cartoes %}
+                            <option value="{{ op.value }}" {{ 'selected' if forma_pagamento_padrao_atual == op.value }}>{{ op.label }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                    {% if opcoes_forma_pagamento.receitas %}
+                    <optgroup label="Pago com o dinheiro de uma receita">
+                        {% for op in opcoes_forma_pagamento.receitas %}
+                            <option value="{{ op.value }}" {{ 'selected' if forma_pagamento_padrao_atual == op.value }}>{{ op.label }}</option>
+                        {% endfor %}
+                    </optgroup>
+                    {% endif %}
+                </select>
+                <div class="form-text">Usada nos lançamentos gerados automaticamente — se escolher um cartão, eles já ficam vinculados a ele.</div>
+            </div>
+
+            <div class="col-12">
+                <label class="form-label">Observação</label>
+                <textarea class="form-control" name="observacao" rows="2">{{ conta.observacao if conta else '' }}</textarea>
+            </div>
+
+            {% if conta %}
+            <div class="col-12">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" name="ativa" id="ativa" {{ 'checked' if conta.ativa }}>
+                    <label class="form-check-label" for="ativa">Conta ativa (gera novos lançamentos automaticamente)</label>
+                </div>
+            </div>
+
+            <div class="col-12" id="blocoAtualizarAbertos">
+                <div class="alert alert-warning mb-0">
+                    <div class="form-check">
+                        <input type="checkbox" class="form-check-input" name="atualizar_lancamentos_abertos" id="atualizarAbertos" onchange="toggleAtualizarDia()">
+                        <label class="form-check-label fw-semibold" for="atualizarAbertos">
+                            Corrigi o valor acima — aplicar também aos lançamentos ainda não pagos
+                        </label>
+                    </div>
+                    <div class="form-text mt-1">
+                        Marque isso quando o valor cadastrado estava errado (ex.: parcela de um
+                        empréstimo). Todos os lançamentos <strong>ainda não pagos</strong> dessa
+                        conta serão atualizados para o valor de referência informado acima.
+                        Lançamentos já pagos nunca são alterados.
+                    </div>
+                    <div class="form-check mt-2" id="campoAtualizarDia" style="display:none;">
+                        <input type="checkbox" class="form-check-input" name="atualizar_dia_vencimento" id="atualizarDia">
+                        <label class="form-check-label" for="atualizarDia">
+                            Também ajustar o dia de vencimento desses lançamentos para o dia informado acima
+                        </label>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 d-flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Salvar</button>
+            <a href="{{ url_for('contas.listar') }}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+</div>
+</div>
+
+<script>
+function toggleCampos() {
+    const tipo = document.getElementById('tipoLancamento').value;
+    document.getElementById('campoParcelas').style.display = (tipo === 'parcelado') ? '' : 'none';
+    document.getElementById('campoProvisionar').style.display = (tipo === 'recorrente') ? '' : 'none';
+    const campoValorETotal = document.getElementById('campoValorETotal');
+    if (campoValorETotal) campoValorETotal.style.display = (tipo === 'parcelado') ? '' : 'none';
+}
+function toggleAtualizarDia() {
+    const marcado = document.getElementById('atualizarAbertos').checked;
+    document.getElementById('campoAtualizarDia').style.display = marcado ? '' : 'none';
+}
+function toggleJaPaga() {
+    const checkbox = document.getElementById('jaPaga');
+    const marcado = checkbox && checkbox.checked;
+    document.getElementById('camposJaPaga').style.display = marcado ? '' : 'none';
+    if (marcado) {
+        const dataInput = document.getElementById('jaPagaData');
+        if (dataInput && !dataInput.value) {
+            dataInput.value = new Date().toISOString().slice(0, 10);
+            sincronizarDiaVencimento();
+        }
+        toggleCampos();
+    }
+}
+function sincronizarDiaVencimento() {
+    const dataInput = document.getElementById('jaPagaData');
+    if (!dataInput || !dataInput.value) return;
+    const dia = parseInt(dataInput.value.split('-')[2], 10);
+    const campoVencimento = document.querySelector('input[name="dia_vencimento"]');
+    if (campoVencimento && dia) campoVencimento.value = dia;
+}
+function sincronizarDataJaPaga() {
+    const dataCriacao = document.getElementById('dataCriacao');
+    if (!dataCriacao || !dataCriacao.value) return;
+
+    // sincroniza o dia de vencimento com o dia da data informada
+    const dia = parseInt(dataCriacao.value.split('-')[2], 10);
+    const campoVencimento = document.querySelector('input[name="dia_vencimento"]');
+    if (campoVencimento && dia) campoVencimento.value = dia;
+
+    // se "já paga" estiver marcado e a data do pagamento ainda estiver vazia, usa a mesma data
+    const dataJaPaga = document.getElementById('jaPagaData');
+    if (dataJaPaga && !dataJaPaga.value) {
+        dataJaPaga.value = dataCriacao.value;
+    }
+}
+function toggleCartao() {
+    const ehCartao = document.getElementById('ehCartao').checked;
+    document.getElementById('blocoNormal').style.display = ehCartao ? 'none' : '';
+    document.getElementById('campoDiaFechamento').style.display = ehCartao ? '' : 'none';
+    document.getElementById('labelDiaVencimento').textContent = ehCartao ? 'Dia de vencimento da fatura' : 'Dia de vencimento';
+    const blocoAtualizar = document.getElementById('blocoAtualizarAbertos');
+    if (blocoAtualizar) blocoAtualizar.style.display = ehCartao ? 'none' : '';
+}
+document.addEventListener('DOMContentLoaded', () => {
+    toggleCampos();
+    toggleCartao();
+    toggleJaPaga();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,129 @@
+<div class="modal fade" id="modalLancamento" tabindex="-1">
+    <div class="modal-dialog">
+        <form id="formLancamento" method="POST" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLancamentoTitulo">Lançamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label">Valor (R$)</label>
+                        <input type="text" class="form-control" name="valor" id="inputValor" data-money required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Vencimento</label>
+                        <input type="date" class="form-control" name="vencimento" id="inputVencimento" required>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Mês de competência</label>
+                        <select class="form-select" name="mes_competencia" id="inputMesCompetencia">
+                            {% for numero, nome in meses_nome %}
+                                <option value="{{ numero }}">{{ nome }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Ano de competência</label>
+                        <select class="form-select" name="ano_competencia" id="inputAnoCompetencia">
+                            {% for ano in anos_competencia %}
+                                <option value="{{ ano }}">{{ ano }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-text mt-0">
+                            A competência define em qual mês este lançamento aparece no dashboard —
+                            normalmente é o mesmo mês do vencimento, mas pode ser ajustada se necessário.
+                        </div>
+                    </div>
+                    <div class="col-12" id="inputFormaPagamentoWrapper">
+                        <label class="form-label">Forma de pagamento</label>
+                        <select class="form-select" name="forma_pagamento" id="inputFormaPagamento">
+                            <optgroup label="Geral">
+                                {% for op in opcoes_forma_pagamento.genericas %}
+                                    <option value="{{ op.value }}">{{ op.label }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            {% if opcoes_forma_pagamento.cartoes %}
+                            <optgroup label="Cartões de crédito">
+                                {% for op in opcoes_forma_pagamento.cartoes %}
+                                    <option value="{{ op.value }}">{{ op.label }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+                            {% if opcoes_forma_pagamento.receitas %}
+                            <optgroup label="Pago com o dinheiro de uma receita">
+                                {% for op in opcoes_forma_pagamento.receitas %}
+                                    <option value="{{ op.value }}">{{ op.label }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            {% endif %}
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" name="dividir_pagamento" id="inputDividir" onchange="toggleDividirPagamento()">
+                            <label class="form-check-label" for="inputDividir">
+                                Dividir esse pagamento entre mais de uma forma
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-12" id="blocoDividir" style="display:none;">
+                        <div id="linhasRateio"></div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary mt-1" onclick="adicionarLinhaRateio()">
+                            <i class="bi bi-plus-lg"></i> Adicionar forma
+                        </button>
+                        <div class="small mt-2">
+                            Total dividido: <span id="totalRateado">R$ 0,00</span>
+                            de <span id="totalAPagarRateio">0,00</span>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <hr class="my-1">
+                    </div>
+
+                    <div class="col-12 form-check ps-4">
+                        <input type="checkbox" class="form-check-input" name="pago" id="inputPago">
+                        <label class="form-check-label fw-semibold" for="inputPago">Marcar como pago / dar baixa</label>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Data do pagamento</label>
+                        <input type="date" class="form-control" name="data_pagamento" id="inputDataPagamento">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">Valor pago (R$)</label>
+                        <input type="text" class="form-control" name="valor_pago" id="inputValorPago" data-money>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label">Observação</label>
+                        <input type="text" class="form-control" name="observacao">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-check2"></i> Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<template id="templateLinhaRateio">
+    <div class="row g-2 align-items-center mb-2 linha-rateio">
+        <div class="col-7">
+            <select class="form-select form-select-sm" name="rateio_forma[]"></select>
+        </div>
+        <div class="col-4">
+            <input type="text" class="form-control form-control-sm" name="rateio_valor[]" data-money placeholder="0,00">
+        </div>
+        <div class="col-1 text-end">
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removerLinhaRateio(this)">
+                <i class="bi bi-x"></i>
+            </button>
+        </div>
+    </div>
+</template>

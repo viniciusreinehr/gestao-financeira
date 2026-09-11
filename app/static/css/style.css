@@ -1,0 +1,164 @@
+:root {
+    --brand: #1f3a5f;
+    --brand-light: #2e5a8f;
+    --accent: #2ecc71;
+    --bg: #f4f6f9;
+}
+
+body {
+    background-color: var(--bg);
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+.app-navbar {
+    background: linear-gradient(90deg, var(--brand), var(--brand-light));
+}
+
+.card {
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 2px 10px rgba(20, 30, 60, 0.06);
+}
+
+.card-kpi {
+    border-radius: 16px;
+}
+
+.card-kpi .kpi-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+}
+
+.badge-categoria {
+    color: #fff;
+    font-weight: 500;
+    padding: 0.35em 0.7em;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    background-color: var(--dot-color, #6c757d);
+}
+
+.list-colors {
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    background-color: var(--dot-color, #6c757d);
+}
+
+.table-lancamentos tbody tr.atrasado {
+    background-color: #fdecea;
+}
+
+.table-lancamentos tbody tr.pago {
+    opacity: 0.65;
+}
+
+.nav-tabs-meses .nav-link.active {
+    font-weight: 600;
+    border-bottom: 3px solid var(--brand-light);
+}
+
+.categoria-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+    background-color: var(--dot-color, #6c757d);
+}
+
+.progress-categoria {
+    height: 8px;
+    border-radius: 6px;
+}
+
+.text-money {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Destaca a linha sob o mouse em todas as tabelas, pra facilitar acertar o
+   botão de editar/excluir certo — funciona por cima de linhas especiais
+   (atrasado, pago) porque escurece o que já está lá, em vez de substituir. */
+.table tbody tr {
+    transition: filter 0.1s ease;
+}
+
+.table tbody tr:hover td {
+    filter: brightness(0.96);
+}
+
+/* Indica visualmente que uma conta pertence a um cartão de crédito,
+   aparecendo tabulada/recuada logo abaixo dele na listagem. */
+.linha-vinculada-cartao td:first-child {
+    padding-left: 2.25rem;
+}
+
+.linha-vinculada-cartao {
+    font-size: 0.92rem;
+}
+
+/* ---------------------------------------------------------------------
+   Mobile: abas de mês roláveis (em vez de quebrar em várias linhas com
+   6 meses), toque confortável em botões/links, e rolagem suave dentro
+   das tabelas com scroll horizontal.
+   --------------------------------------------------------------------- */
+
+.table-responsive {
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-tabs-meses {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.nav-tabs-meses .nav-item {
+    flex: 0 0 auto;
+}
+
+.nav-tabs-meses .nav-link {
+    white-space: nowrap;
+}
+
+@media (max-width: 576px) {
+    main.container-fluid {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+    }
+
+    .card {
+        border-radius: 12px;
+    }
+
+    .card-kpi .kpi-value {
+        font-size: 1.25rem;
+    }
+
+    .card-kpi.p-3 {
+        padding: 0.85rem !important;
+    }
+
+    /* área de toque maior nos botões de ação das tabelas */
+    .table .btn-sm {
+        padding: 0.35rem 0.55rem;
+        min-height: 34px;
+    }
+
+    .navbar-brand {
+        font-size: 1.05rem;
+    }
+
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    /* linhas de rateio (pagamento dividido) e formulários ficam mais
+       folgados verticalmente em telas estreitas em vez de espremidos */
+    .linha-rateio .col-7,
+    .linha-rateio .col-4 {
+        margin-bottom: 0.35rem;
+    }
+}

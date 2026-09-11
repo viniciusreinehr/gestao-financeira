@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Investimentos{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
+    <div>
+        <h4 class="mb-0"><i class="bi bi-graph-up-arrow"></i> Investimentos</h4>
+        <p class="text-muted mb-0">
+            Investido: <strong class="text-money">{{ total_investido | moeda }}</strong> ·
+            Projetado hoje: <strong class="text-money text-success">{{ total_projetado | moeda }}</strong>
+        </p>
+    </div>
+    <a href="{{ url_for('investimentos.novo') }}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo investimento</a>
+</div>
+
+<div class="row g-3">
+{% for item in linhas %}
+    {% set inv = item.inv %}
+    <div class="col-md-6 col-xl-4">
+        <div class="card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <h6 class="mb-0">{{ inv.nome }}</h6>
+                    <div class="small text-muted">{{ inv.banco or '-' }} · {{ inv.tipo }}</div>
+                </div>
+                <span class="badge bg-light text-dark border">{{ inv.data_aplicacao | data }}</span>
+            </div>
+            <hr>
+            <div class="row text-center g-2">
+                <div class="col-6">
+                    <div class="small text-muted">Aplicado</div>
+                    <div class="fw-semibold text-money">{{ inv.valor_inicial | moeda }}</div>
+                </div>
+                <div class="col-6">
+                    <div class="small text-muted">Projetado hoje</div>
+                    <div class="fw-semibold text-money text-success">{{ item.projetado | moeda }}</div>
+                </div>
+            </div>
+            <div class="small text-center mt-2 {{ 'text-success' if item.rendimento >= 0 else 'text-danger' }}">
+                {{ '+' if item.rendimento >= 0 }}{{ item.rendimento | moeda }} de rendimento estimado
+            </div>
+            {% if inv.taxa_mensal_pct %}
+                <div class="small text-muted text-center">Taxa: {{ inv.taxa_mensal_pct }}% a.m.</div>
+            {% else %}
+                <div class="small text-muted text-center">Sem taxa cadastrada — valor mantido conforme última atualização manual.</div>
+            {% endif %}
+
+            <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-sm btn-outline-primary flex-fill" data-bs-toggle="modal" data-bs-target="#modalAtualizar{{ inv.id }}">
+                    <i class="bi bi-arrow-repeat"></i> Atualizar valor
+                </button>
+                <a href="{{ url_for('investimentos.editar', inv_id=inv.id) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                <form method="post" action="{{ url_for('investimentos.excluir', inv_id=inv.id) }}" onsubmit="return confirm('Remover este investimento?');">
+                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalAtualizar{{ inv.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <form class="modal-content" method="post" action="{{ url_for('investimentos.atualizar_valor', inv_id=inv.id) }}">
+                <div class="modal-header">
+                    <h5 class="modal-title">Atualizar valor — {{ inv.nome }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Use quando consultar o extrato do banco e quiser registrar o saldo real atual (substitui a projeção automática a partir de hoje).</p>
+                    <div class="mb-3">
+                        <label class="form-label">Valor atual (R$)</label>
+                        <input type="text" class="form-control" name="valor_atual_manual" data-money required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Data</label>
+                        <input type="date" class="form-control" name="data_atualizacao_manual">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+{% else %}
+    <div class="col-12">
+        <div class="card p-4 text-center text-muted">Nenhum investimento cadastrado ainda.</div>
+    </div>
+{% endfor %}
+</div>
+{% endblock %}

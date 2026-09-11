@@ -1,0 +1,107 @@
+name: Build executáveis
+
+# Roda sempre que houver um push na branch principal, em qualquer Pull
+# Request, ou manualmente pela aba "Actions" do GitHub (botão "Run workflow").
+# Se você criar uma tag no formato v1.0.0 (git tag v1.0.0 && git push --tags),
+# além de gerar os executáveis ele também cria uma Release no GitHub com os
+# três arquivos já anexados, prontos para outras pessoas baixarem.
+on:
+  push:
+    branches: ["main"]
+    tags: ["v*"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build (${{ matrix.nome_amigavel }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            nome_amigavel: Windows
+            artefato: dist/GestaoFinanceira.exe
+            nome_artefato: GestaoFinanceira-Windows
+          - os: macos-latest
+            nome_amigavel: macOS
+            artefato: dist/GestaoFinanceira.app
+            nome_artefato: GestaoFinanceira-macOS
+          - os: ubuntu-latest
+            nome_amigavel: Linux
+            artefato: dist/GestaoFinanceira
+            nome_artefato: GestaoFinanceira-Linux
+
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # pywebview (a janela nativa) precisa dessas bibliotecas de sistema no
+      # Linux — no Windows e Mac não precisa de nada além do pip install.
+      - name: Instalar dependências de sistema (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-gi python3-gi-cairo gir1.2-gtk-3.0 gir1.2-webkit2-4.1
+
+      - name: Instalar dependências Python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-build.txt
+
+      - name: Gerar o executável
+        run: python build.py
+
+      # No Mac, --windowed gera um pacote .app (uma pasta, não um arquivo
+      # único) — compacta em .zip para poder subir como artefato/release.
+      - name: Compactar o .app (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cd dist
+          zip -r GestaoFinanceira-macOS.zip GestaoFinanceira.app
+
+      - name: Enviar o executável Windows/Linux como artefato
+        if: runner.os != 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.nome_artefato }}
+          path: ${{ matrix.artefato }}
+          if-no-files-found: error
+
+      - name: Enviar o .app compactado (macOS) como artefato
+        if: runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.nome_artefato }}
+          path: dist/GestaoFinanceira-macOS.zip
+          if-no-files-found: error
+
+  # Só roda quando você empurrar uma tag (ex.: v1.0.0) — junta os três
+  # executáveis já gerados acima numa Release do GitHub, prontos para
+  # qualquer pessoa baixar direto da aba "Releases" do repositório.
+  release:
+    name: Publicar Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar todos os executáveis gerados
+        uses: actions/download-artifact@v4
+        with:
+          path: artefatos
+
+      - name: Publicar na Release do GitHub
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artefatos/GestaoFinanceira-Windows/GestaoFinanceira.exe
+            artefatos/GestaoFinanceira-Linux/GestaoFinanceira
+            artefatos/GestaoFinanceira-macOS/GestaoFinanceira-macOS.zip
